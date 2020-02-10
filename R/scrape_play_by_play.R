@@ -60,10 +60,17 @@ scrape_game_play_by_play <- function(game_id, type, season, check_url = 1) {
   if (season >= 2009) {
     game_pbp <- scrape_json_play_by_play(game_id, check_url)
   } else {
-    # game_pbp <- scrape_html_play_by_play(game_id, check_url)
-    # This will be added later:
-    print("Game data prior to 2009 coming soon!")
-    game_pbp <- NA
+    game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", season, "/", game_id, ".json", sep = "")),
+                        error = function(cond) { 
+                          message("Could not read from file")
+                          message("Here's the original error message:")
+                          message(cond)
+                          # Just return NA in case of error
+                          return(NA)
+                        }
+    )
+
+    game_pbp <- format_json_play_by_play(game_id, game_json, toString(game_id))
   }
   
   # Return the game's data:
