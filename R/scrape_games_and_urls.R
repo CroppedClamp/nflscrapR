@@ -182,37 +182,39 @@ scrape_game_ids <- function(season, type = "reg", weeks = NULL, teams = NULL) {
       # Next create a variable with the url for each game:
       
     return
+  } else {
+    game_ids_df %>%
+      dplyr::mutate(type = rep(type, nrow(game_ids_df)),
+                    season = rep(season, nrow(game_ids_df))) %>%
+      dplyr::select(type, game_id, home_team, away_team, week, season, state_of_game) %>%
+      as.data.frame() %>%
+      # Due to how the NFL displays Thursday Night Football games, only use 
+      # the distinct rows:
+      dplyr::distinct() %>%
+      # Next create a variable with the url for each game:
+
+      dplyr::mutate(game_url = sapply(game_id, create_game_json_url),
+                    # Now for each game, if it is over based on the
+                    # state_of_game field then access the scores of the
+                    # game for the home and away teams:
+                    home_score = purrr::map2_dbl(game_url, state_of_game,
+                                                .f = function(x, y) {
+                                                  ifelse(y == "POST",
+                                                          max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$home$score),
+                                                          NA)
+                                                  }),
+                    away_score = purrr::map2_dbl(game_url, state_of_game,
+                                                .f = function(x, y) {
+                                                  ifelse(y == "POST",
+                                                          max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$away$score),
+                                                          NA)
+                                                  })) %>%
+      return
   }
   
   
   # Return the game ids in a data frame with columns for the season and type:
-  game_ids_df %>%
-    dplyr::mutate(type = rep(type, nrow(game_ids_df)),
-                  season = rep(season, nrow(game_ids_df))) %>%
-    dplyr::select(type, game_id, home_team, away_team, week, season, state_of_game) %>%
-    as.data.frame() %>%
-    # Due to how the NFL displays Thursday Night Football games, only use 
-    # the distinct rows:
-    dplyr::distinct() %>%
-    # Next create a variable with the url for each game:
 
-    dplyr::mutate(game_url = sapply(game_id, create_game_json_url),
-                  # Now for each game, if it is over based on the
-                  # state_of_game field then access the scores of the
-                  # game for the home and away teams:
-                  home_score = purrr::map2_dbl(game_url, state_of_game,
-                                              .f = function(x, y) {
-                                                ifelse(y == "POST",
-                                                        max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$home$score),
-                                                        NA)
-                                                }),
-                  away_score = purrr::map2_dbl(game_url, state_of_game,
-                                              .f = function(x, y) {
-                                                ifelse(y == "POST",
-                                                        max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$away$score),
-                                                        NA)
-                                                })) %>%
-    return
 }
 
 #' Create the url with the location of NFL game JSON data
