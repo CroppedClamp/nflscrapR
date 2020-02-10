@@ -465,12 +465,16 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
                         }
   )
 
-  formatted <- format_json_play_by_play(game_id, game_json)
+  # Now create a column for the game date using the game_id and game_url:
+  date_parse <- stringr::str_extract(game_url, pattern = "/[0-9]{10}/") %>%
+    stringr::str_extract(pattern = "[0-9]{8}")
+
+  formatted <- format_json_play_by_play(game_id, game_json, date_parse)
   return(formatted)
 }
 
 
-format_json_play_by_play <- function(game_id, game_json) {
+format_json_play_by_play <- function(game_id, game_json, date_parse) {
   
   # Now make the hash lookup table for the various NFL GSIS stat ids, this will
   # make the process simpler (and faster) for gathering the play level data:
@@ -2378,9 +2382,6 @@ format_json_play_by_play <- function(game_id, game_json) {
                                                   yardline_100 == 50,
                                                 100 - yardline_100, yardline_100))
   
-  # Now create a column for the game date using the game_id and game_url:
-  date_parse <- stringr::str_extract(game_url, pattern = "/[0-9]{10}/") %>%
-    stringr::str_extract(pattern = "[0-9]{8}")
   date_year <- stringr::str_sub(date_parse, 1, 4)
   date_month <- stringr::str_sub(date_parse, 5, 6)
   date_day <- stringr::str_sub(date_parse, nchar(date_parse) - 1, 
