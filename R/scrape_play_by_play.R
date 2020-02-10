@@ -465,7 +465,8 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
                         }
   )
 
-  return format_json_play_by_play(game_id, game_json)
+  formatted <- format_json_play_by_play(game_id, game_json)
+  return(formatted)
 }
 
 
