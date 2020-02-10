@@ -2842,7 +2842,7 @@ scrape_season_play_by_play <- function(season, type = "reg", weeks = NULL, teams
   # Gather the game ids based on the inputs:
   game_ids <- scrape_game_ids(season, type, weeks, teams) %>%
     # Remove the pre-season games that were broken in the NFL API:
-    dplyr::filter(!(game_id %in% c(2014081503, 2016080751))) %>%
+    dplyr::filter(!(game_id %in% c(2014081503, 2016080751, 1999110706, 2000100800, 2000091707, 2000091709, 2005112702, 2005122403))) %>%
     dplyr::pull(game_id)
   
   if (season >= 2009) {
@@ -2852,17 +2852,24 @@ scrape_season_play_by_play <- function(season, type = "reg", weeks = NULL, teams
                                      game_url <- create_game_json_url(x)
                                      RCurl::url.exists(game_url)
                                    })
-  }
 
-  # If none of the games are available exit:
-  assertthat::assert_that(length(game_ids[game_ids_check]) > 0,
-                          msg = "There are no games available for your inputs!")
-  
-  # Scrape each game's play-by-play and return:
-  purrr::map_dfr(game_ids[game_ids_check], 
-                 function(x) {
-                   scrape_game_play_by_play(game_id = x, type, season,
-                                            check_url = 0)
-                 }) %>% 
-    return
+    # If none of the games are available exit:
+    assertthat::assert_that(length(game_ids[game_ids_check]) > 0,
+                            msg = "There are no games available for your inputs!")
+    
+    # Scrape each game's play-by-play and return:
+    purrr::map_dfr(game_ids[game_ids_check], 
+                  function(x) {
+                    scrape_game_play_by_play(game_id = x, type, season,
+                                              check_url = 0)
+                  }) %>% 
+      return
+  } else {
+    purrr::map_dfr(game_ids, 
+                  function(x) {
+                    scrape_game_play_by_play(game_id = x, type, season,
+                                              check_url = 0)
+                  }) %>% 
+      return
+  }
 }
