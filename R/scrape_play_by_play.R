@@ -60,7 +60,7 @@ scrape_game_play_by_play <- function(game_id, type, season, check_url = 1) {
   if (season >= 2009) {
     game_pbp <- scrape_json_play_by_play(game_id, check_url)
   } else {
-    game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", season, "/", game_id, ".json", sep = "")),
+    game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
                         error = function(cond) { 
                           message("Could not read from file")
                           message("Here's the original error message:")
@@ -450,33 +450,49 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
       )
     )
   
-  # First create the game's url:
-  game_url <- create_game_json_url(game_id)
-  
-  # Next check to make sure it exists if check_url == 1:
-  if (check_url == 1) {
-    assertthat::assert_that(RCurl::url.exists(game_url),
-                            msg = "The url for this game is not available yet, please try again later.")
-  }
 
-  # Next access the JSON feed for the game, catching any errors that potentially
-  # occur due to the NFL's connection (or internet issues):
-  game_json <- tryCatch(RJSONIO::fromJSON(RCurl::getURL(game_url, encoding = "gzip")),
+  if (as.numeric(stringr::str_sub(as.character(game_id), 1, 6)) > 200904) {
+    # First create the game's url:
+    game_url <- create_game_json_url(game_id)
+    
+    # Next check to make sure it exists if check_url == 1:
+    if (check_url == 1) {
+      assertthat::assert_that(RCurl::url.exists(game_url),
+                              msg = "The url for this game is not available yet, please try again later.")
+    }
+
+    # Next access the JSON feed for the game, catching any errors that potentially
+    # occur due to the NFL's connection (or internet issues):
+    game_json <- tryCatch(RJSONIO::fromJSON(RCurl::getURL(game_url, encoding = "gzip")),
+                          error = function(cond) { 
+                            message("Connection to NFL.com disrupted, please re-run code.")
+                            message(paste("Here is the game's url:", game_url))
+                            message("Here's the original error message:")
+                            message(cond)
+                            # Just return NA in case of error
+                            return(NA)
+                          }
+    )
+
+    # Now create a column for the game date using the game_id and game_url:
+    date_parse <- stringr::str_extract(game_url, pattern = "/[0-9]{10}/") %>%
+      stringr::str_extract(pattern = "[0-9]{8}")
+
+    formatted <- format_json_play_by_play(game_id, game_json, date_parse)
+  } else {
+    game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
                         error = function(cond) { 
-                          message("Connection to NFL.com disrupted, please re-run code.")
-                          message(paste("Here is the game's url:", game_url))
+                          message("Could not read from file")
                           message("Here's the original error message:")
                           message(cond)
                           # Just return NA in case of error
                           return(NA)
                         }
-  )
+    )
 
-  # Now create a column for the game date using the game_id and game_url:
-  date_parse <- stringr::str_extract(game_url, pattern = "/[0-9]{10}/") %>%
-    stringr::str_extract(pattern = "[0-9]{8}")
+    formatted <- format_json_play_by_play(game_id, game_json, toString(game_id))
+  }
 
-  formatted <- format_json_play_by_play(game_id, game_json, date_parse)
   return(formatted)
 }
 
