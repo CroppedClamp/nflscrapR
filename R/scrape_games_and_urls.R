@@ -182,25 +182,22 @@ scrape_game_ids <- function(season, type = "reg", weeks = NULL, teams = NULL) {
     dplyr::distinct() %>%
     # Next create a variable with the url for each game:
 
-    if (season >= 2009) {
-      dplyr::mutate(game_url = sapply(game_id, create_game_json_url),
-                    # Now for each game, if it is over based on the
-                    # state_of_game field then access the scores of the
-                    # game for the home and away teams:
-                    home_score = purrr::map2_dbl(game_url, state_of_game,
-                                                .f = function(x, y) {
-                                                  ifelse(y == "POST",
-                                                          max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$home$score),
-                                                          NA)
-                                                  }),
-                    away_score = purrr::map2_dbl(game_url, state_of_game,
-                                                .f = function(x, y) {
-                                                  ifelse(y == "POST",
-                                                          max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$away$score),
-                                                          NA)
-                                                  })) %>%
-    }
-    
+    dplyr::mutate(game_url = sapply(game_id, create_game_json_url),
+                  # Now for each game, if it is over based on the
+                  # state_of_game field then access the scores of the
+                  # game for the home and away teams:
+                  home_score = purrr::map2_dbl(game_url, state_of_game,
+                                              .f = function(x, y) {
+                                                ifelse(y == "POST",
+                                                        max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$home$score),
+                                                        NA)
+                                                }),
+                  away_score = purrr::map2_dbl(game_url, state_of_game,
+                                              .f = function(x, y) {
+                                                ifelse(y == "POST",
+                                                        max(RJSONIO::fromJSON(RCurl::getURL(x, encoding = "gzip"))[[1]]$away$score),
+                                                        NA)
+                                                })) %>%
     return
 }
 
