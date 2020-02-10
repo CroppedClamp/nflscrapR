@@ -2829,13 +2829,15 @@ scrape_season_play_by_play <- function(season, type = "reg", weeks = NULL, teams
     dplyr::filter(!(game_id %in% c(2014081503, 2016080751))) %>%
     dplyr::pull(game_id)
   
-  # Go through each game and check if the URL exists:
-  game_ids_check <- purrr::map_lgl(game_ids,
+  if (season >= 2009) {
+    # Go through each game and check if the URL exists:
+    game_ids_check <- purrr::map_lgl(game_ids,
                                    function(x) {
                                      game_url <- create_game_json_url(x)
                                      RCurl::url.exists(game_url)
                                    })
-  
+  }
+
   # If none of the games are available exit:
   assertthat::assert_that(length(game_ids[game_ids_check]) > 0,
                           msg = "There are no games available for your inputs!")
