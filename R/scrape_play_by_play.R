@@ -451,6 +451,25 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
     assertthat::assert_that(RCurl::url.exists(game_url),
                             msg = "The url for this game is not available yet, please try again later.")
   }
+
+  # Next access the JSON feed for the game, catching any errors that potentially
+  # occur due to the NFL's connection (or internet issues):
+  game_json <- tryCatch(RJSONIO::fromJSON(RCurl::getURL(game_url, encoding = "gzip")),
+                        error = function(cond) { 
+                          message("Connection to NFL.com disrupted, please re-run code.")
+                          message(paste("Here is the game's url:", game_url))
+                          message("Here's the original error message:")
+                          message(cond)
+                          # Just return NA in case of error
+                          return(NA)
+                        }
+  )
+
+  return format_json_play_by_play(game_id, game_json)
+}
+
+
+format_json_play_by_play <- function(game_id, game_json) {
   
   # Now make the hash lookup table for the various NFL GSIS stat ids, this will
   # make the process simpler (and faster) for gathering the play level data:
@@ -532,19 +551,6 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
                                      "defensive_two_point_conv",
                                      "defensive_extra_point_attempt",
                                      "defensive_extra_point_conv"))
-  
-  # Next access the JSON feed for the game, catching any errors that potentially
-  # occur due to the NFL's connection (or internet issues):
-  game_json <- tryCatch(RJSONIO::fromJSON(RCurl::getURL(game_url, encoding = "gzip")),
-                        error = function(cond) { 
-                          message("Connection to NFL.com disrupted, please re-run code.")
-                          message(paste("Here is the game's url:", game_url))
-                          message("Here's the original error message:")
-                          message(cond)
-                          # Just return NA in case of error
-                          return(NA)
-                        }
-  )
   
   # Store the number of drives in the game 
   n_drives <- length(game_json[[1]]$drives) - 1
