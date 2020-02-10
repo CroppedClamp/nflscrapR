@@ -169,6 +169,20 @@ scrape_game_ids <- function(season, type = "reg", weeks = NULL, teams = NULL) {
     game_ids_df <- game_ids_df %>%
       dplyr::filter(home_team %in% teams | away_team %in% teams)
   }
+
+  if (season < 2009) {
+    game_ids_df %>%
+      dplyr::mutate(type = rep(type, nrow(game_ids_df)),
+                    season = rep(season, nrow(game_ids_df))) %>%
+      dplyr::select(type, game_id, home_team, away_team, week, season, state_of_game) %>%
+      as.data.frame() %>%
+      # Due to how the NFL displays Thursday Night Football games, only use 
+      # the distinct rows:
+      dplyr::distinct() %>%
+      # Next create a variable with the url for each game:
+      
+    return
+  }
   
   
   # Return the game ids in a data frame with columns for the season and type:
