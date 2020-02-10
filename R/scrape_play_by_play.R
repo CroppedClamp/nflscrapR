@@ -474,6 +474,7 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
 }
 
 
+#' @export
 format_json_play_by_play <- function(game_id, game_json, date_parse) {
   
   # Now make the hash lookup table for the various NFL GSIS stat ids, this will
