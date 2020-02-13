@@ -539,53 +539,61 @@ add_air_yac_ep_variables <- function(pbp_data) {
                   down = as.factor(down))
   
   # Get the new predicted probabilites:
-  if (nrow(pass_pbp_data) > 1 & sum(!is.na(pass_pbp_data$air_yards)) > 0) {
-    pass_pbp_data_preds <- as.data.frame(predict(ep_model, newdata = pass_pbp_data, type = "probs"))
-  } else{
-    pass_pbp_data_preds <- as.data.frame(matrix(predict(ep_model, newdata = pass_pbp_data, type = "probs"),
-                                                ncol = 7))
+  if (sum(!is.na(pass_pbp_data$air_yards)) == 0) {
+    pbp_data$airEPA <- NA
+    pbp_data$yacEPA <- NA
+    pbp_data$airEPA[pass_plays_i] <- NA
+    pbp_data$yacEPA[pass_plays_i] <- NA
+  } else {
+    if (nrow(pass_pbp_data) > 1) {
+      pass_pbp_data_preds <- as.data.frame(predict(ep_model, newdata = pass_pbp_data, type = "probs"))
+    } else{
+      pass_pbp_data_preds <- as.data.frame(matrix(predict(ep_model, newdata = pass_pbp_data, type = "probs"),
+                                                  ncol = 7))
+    }
+
+    colnames(pass_pbp_data_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
+                                      "Field_Goal","Safety","Touchdown")
+    # Convert to air EP:
+    pass_pbp_data_preds <- dplyr::mutate(pass_pbp_data_preds, airEP = (Opp_Safety*-2) + (Opp_Field_Goal*-3) + 
+                                          (Opp_Touchdown*-7) + (Safety*2) + (Field_Goal*3) + (Touchdown*7))
+    
+    # Return back to the passing data:
+    pass_pbp_data$airEP <- pass_pbp_data_preds$airEP
+    
+    # For the plays that have TimeSecs_Remaining 0 or less, set airEP to 0:
+    pass_pbp_data$airEP[which(pass_pbp_data$TimeSecs_Remaining <= 0)] <- 0
+    
+    # Calculate the airEPA based on 4 scenarios:
+    pass_pbp_data$airEPA <- with(pass_pbp_data, ifelse(old_yrdline100 - air_yards <= 0,
+                                                      7 - ep,
+                                                      ifelse(old_yrdline100 - air_yards > 99,
+                                                              -2 - ep,
+                                                              ifelse(Turnover_Ind == 1,
+                                                                    (-1*airEP) - ep,
+                                                                    airEP - ep))))
+    
+    # If the play is a two-point conversion then change the airEPA to NA since
+    # no air yards are provided:
+    pass_pbp_data$airEPA <- with(pass_pbp_data, ifelse(two_point_attempt == 1,
+                                                      NA, airEPA))
+    # Calculate the yards after catch EPA:
+    pass_pbp_data <- dplyr::mutate(pass_pbp_data, yacEPA = epa - airEPA)
+    
+    # if Yards after catch is 0 make yacEPA set to 0:
+    pass_pbp_data$yacEPA <- ifelse(pass_pbp_data$yards_after_catch == 0 & pass_pbp_data$complete_pass==1,
+                                  0, pass_pbp_data$yacEPA)
+    
+    # if Yards after catch is 0 make airEPA set to EPA:
+    pass_pbp_data$airEPA <- ifelse(pass_pbp_data$yards_after_catch == 0 & pass_pbp_data$complete_pass == 1,
+                                  pass_pbp_data$epa, pass_pbp_data$airEPA)
+    
+    # Now add airEPA and yacEPA to the original dataset:
+    pbp_data$airEPA <- NA
+    pbp_data$yacEPA <- NA
+    pbp_data$airEPA[pass_plays_i] <- pass_pbp_data$airEPA
+    pbp_data$yacEPA[pass_plays_i] <- pass_pbp_data$yacEPA
   }
-  colnames(pass_pbp_data_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                     "Field_Goal","Safety","Touchdown")
-  # Convert to air EP:
-  pass_pbp_data_preds <- dplyr::mutate(pass_pbp_data_preds, airEP = (Opp_Safety*-2) + (Opp_Field_Goal*-3) + 
-                                         (Opp_Touchdown*-7) + (Safety*2) + (Field_Goal*3) + (Touchdown*7))
-  
-  # Return back to the passing data:
-  pass_pbp_data$airEP <- pass_pbp_data_preds$airEP
-  
-  # For the plays that have TimeSecs_Remaining 0 or less, set airEP to 0:
-  pass_pbp_data$airEP[which(pass_pbp_data$TimeSecs_Remaining <= 0)] <- 0
-  
-  # Calculate the airEPA based on 4 scenarios:
-  pass_pbp_data$airEPA <- with(pass_pbp_data, ifelse(old_yrdline100 - air_yards <= 0,
-                                                     7 - ep,
-                                                     ifelse(old_yrdline100 - air_yards > 99,
-                                                            -2 - ep,
-                                                            ifelse(Turnover_Ind == 1,
-                                                                   (-1*airEP) - ep,
-                                                                   airEP - ep))))
-  
-  # If the play is a two-point conversion then change the airEPA to NA since
-  # no air yards are provided:
-  pass_pbp_data$airEPA <- with(pass_pbp_data, ifelse(two_point_attempt == 1,
-                                                     NA, airEPA))
-  # Calculate the yards after catch EPA:
-  pass_pbp_data <- dplyr::mutate(pass_pbp_data, yacEPA = epa - airEPA)
-  
-  # if Yards after catch is 0 make yacEPA set to 0:
-  pass_pbp_data$yacEPA <- ifelse(pass_pbp_data$yards_after_catch == 0 & pass_pbp_data$complete_pass==1,
-                                 0, pass_pbp_data$yacEPA)
-  
-  # if Yards after catch is 0 make airEPA set to EPA:
-  pass_pbp_data$airEPA <- ifelse(pass_pbp_data$yards_after_catch == 0 & pass_pbp_data$complete_pass == 1,
-                                 pass_pbp_data$epa, pass_pbp_data$airEPA)
-  
-  # Now add airEPA and yacEPA to the original dataset:
-  pbp_data$airEPA <- NA
-  pbp_data$yacEPA <- NA
-  pbp_data$airEPA[pass_plays_i] <- pass_pbp_data$airEPA
-  pbp_data$yacEPA[pass_plays_i] <- pass_pbp_data$yacEPA
   
   # Now change the names to be the right style, calculate the completion form
   # of the variables, as well as the cumulative totals and return:
