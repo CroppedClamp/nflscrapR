@@ -610,59 +610,59 @@ add_air_yac_ep_variables <- function(pbp_data) {
     pbp_data$yacEPA <- NA
     pbp_data$airEPA[pass_plays_i] <- pass_pbp_data$airEPA
     pbp_data$yacEPA[pass_plays_i] <- pass_pbp_data$yacEPA
+
+    # Now change the names to be the right style, calculate the completion form
+    # of the variables, as well as the cumulative totals and return:
+    pbp_data %>%
+      dplyr::rename(air_epa = airEPA,
+                    yac_epa = yacEPA) %>%
+      dplyr::mutate(comp_air_epa = dplyr::if_else(complete_pass == 1,
+                                                  air_epa, 0),
+                    comp_yac_epa = dplyr::if_else(complete_pass == 1,
+                                                  yac_epa, 0),
+                    home_team_comp_air_epa = dplyr::if_else(posteam == home_team,
+                                                            comp_air_epa, -comp_air_epa),
+                    away_team_comp_air_epa = dplyr::if_else(posteam == away_team,
+                                                            comp_air_epa, -comp_air_epa),
+                    home_team_comp_yac_epa = dplyr::if_else(posteam == home_team,
+                                                            comp_yac_epa, -comp_yac_epa),
+                    away_team_comp_yac_epa = dplyr::if_else(posteam == away_team,
+                                                            comp_yac_epa, -comp_yac_epa),
+                    home_team_comp_air_epa = dplyr::if_else(is.na(home_team_comp_air_epa),
+                                                  0, home_team_comp_air_epa),
+                    away_team_comp_air_epa = dplyr::if_else(is.na(away_team_comp_air_epa),
+                                                  0, away_team_comp_air_epa),
+                    home_team_comp_yac_epa = dplyr::if_else(is.na(home_team_comp_yac_epa),
+                                                      0, home_team_comp_yac_epa),
+                    away_team_comp_yac_epa = dplyr::if_else(is.na(away_team_comp_yac_epa),
+                                                      0, away_team_comp_yac_epa),
+                    total_home_comp_air_epa = cumsum(home_team_comp_air_epa),
+                    total_away_comp_air_epa = cumsum(away_team_comp_air_epa),
+                    total_home_comp_yac_epa = cumsum(home_team_comp_yac_epa),
+                    total_away_comp_yac_epa = cumsum(away_team_comp_yac_epa),
+                    # Same but for raw - not just completions:
+                    home_team_raw_air_epa = dplyr::if_else(posteam == home_team,
+                                                            air_epa, -air_epa),
+                    away_team_raw_air_epa = dplyr::if_else(posteam == away_team,
+                                                            air_epa, -air_epa),
+                    home_team_raw_yac_epa = dplyr::if_else(posteam == home_team,
+                                                            yac_epa, -yac_epa),
+                    away_team_raw_yac_epa = dplyr::if_else(posteam == away_team,
+                                                            yac_epa, -yac_epa),
+                    home_team_raw_air_epa = dplyr::if_else(is.na(home_team_raw_air_epa),
+                                                            0, home_team_raw_air_epa),
+                    away_team_raw_air_epa = dplyr::if_else(is.na(away_team_raw_air_epa),
+                                                            0, away_team_raw_air_epa),
+                    home_team_raw_yac_epa = dplyr::if_else(is.na(home_team_raw_yac_epa),
+                                                            0, home_team_raw_yac_epa),
+                    away_team_raw_yac_epa = dplyr::if_else(is.na(away_team_raw_yac_epa),
+                                                            0, away_team_raw_yac_epa),
+                    total_home_raw_air_epa = cumsum(home_team_raw_air_epa),
+                    total_away_raw_air_epa = cumsum(away_team_raw_air_epa),
+                    total_home_raw_yac_epa = cumsum(home_team_raw_yac_epa),
+                    total_away_raw_yac_epa = cumsum(away_team_raw_yac_epa)) %>%
+      return
   }
-  
-  # Now change the names to be the right style, calculate the completion form
-  # of the variables, as well as the cumulative totals and return:
-  pbp_data %>%
-    dplyr::rename(air_epa = airEPA,
-                  yac_epa = yacEPA) %>%
-    dplyr::mutate(comp_air_epa = dplyr::if_else(complete_pass == 1,
-                                                air_epa, 0),
-                  comp_yac_epa = dplyr::if_else(complete_pass == 1,
-                                                yac_epa, 0),
-                  home_team_comp_air_epa = dplyr::if_else(posteam == home_team,
-                                                          comp_air_epa, -comp_air_epa),
-                  away_team_comp_air_epa = dplyr::if_else(posteam == away_team,
-                                                          comp_air_epa, -comp_air_epa),
-                  home_team_comp_yac_epa = dplyr::if_else(posteam == home_team,
-                                                          comp_yac_epa, -comp_yac_epa),
-                  away_team_comp_yac_epa = dplyr::if_else(posteam == away_team,
-                                                          comp_yac_epa, -comp_yac_epa),
-                  home_team_comp_air_epa = dplyr::if_else(is.na(home_team_comp_air_epa),
-                                                 0, home_team_comp_air_epa),
-                  away_team_comp_air_epa = dplyr::if_else(is.na(away_team_comp_air_epa),
-                                                 0, away_team_comp_air_epa),
-                  home_team_comp_yac_epa = dplyr::if_else(is.na(home_team_comp_yac_epa),
-                                                     0, home_team_comp_yac_epa),
-                  away_team_comp_yac_epa = dplyr::if_else(is.na(away_team_comp_yac_epa),
-                                                     0, away_team_comp_yac_epa),
-                  total_home_comp_air_epa = cumsum(home_team_comp_air_epa),
-                  total_away_comp_air_epa = cumsum(away_team_comp_air_epa),
-                  total_home_comp_yac_epa = cumsum(home_team_comp_yac_epa),
-                  total_away_comp_yac_epa = cumsum(away_team_comp_yac_epa),
-                  # Same but for raw - not just completions:
-                  home_team_raw_air_epa = dplyr::if_else(posteam == home_team,
-                                                          air_epa, -air_epa),
-                  away_team_raw_air_epa = dplyr::if_else(posteam == away_team,
-                                                          air_epa, -air_epa),
-                  home_team_raw_yac_epa = dplyr::if_else(posteam == home_team,
-                                                          yac_epa, -yac_epa),
-                  away_team_raw_yac_epa = dplyr::if_else(posteam == away_team,
-                                                          yac_epa, -yac_epa),
-                  home_team_raw_air_epa = dplyr::if_else(is.na(home_team_raw_air_epa),
-                                                          0, home_team_raw_air_epa),
-                  away_team_raw_air_epa = dplyr::if_else(is.na(away_team_raw_air_epa),
-                                                          0, away_team_raw_air_epa),
-                  home_team_raw_yac_epa = dplyr::if_else(is.na(home_team_raw_yac_epa),
-                                                          0, home_team_raw_yac_epa),
-                  away_team_raw_yac_epa = dplyr::if_else(is.na(away_team_raw_yac_epa),
-                                                          0, away_team_raw_yac_epa),
-                  total_home_raw_air_epa = cumsum(home_team_raw_air_epa),
-                  total_away_raw_air_epa = cumsum(away_team_raw_air_epa),
-                  total_home_raw_yac_epa = cumsum(home_team_raw_yac_epa),
-                  total_away_raw_yac_epa = cumsum(away_team_raw_yac_epa)) %>%
-    return
 }
 
 #' Calculate and add the win probability variables to include in a `nflscrapR` 
