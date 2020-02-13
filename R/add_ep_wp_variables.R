@@ -539,7 +539,7 @@ add_air_yac_ep_variables <- function(pbp_data) {
                   down = as.factor(down))
   
   # Get the new predicted probabilites:
-  if (nrow(pass_pbp_data) > 1) {
+  if (nrow(pass_pbp_data) > 1 & sum(!is.na(pass_pbp_data$air_yards)) > 0) {
     pass_pbp_data_preds <- as.data.frame(predict(ep_model, newdata = pass_pbp_data, type = "probs"))
   } else{
     pass_pbp_data_preds <- as.data.frame(matrix(predict(ep_model, newdata = pass_pbp_data, type = "probs"),
