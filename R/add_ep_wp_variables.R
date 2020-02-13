@@ -540,10 +540,27 @@ add_air_yac_ep_variables <- function(pbp_data) {
   
   # Get the new predicted probabilites:
   if (sum(!is.na(pass_pbp_data$air_yards)) == 0) {
-    pbp_data$airEPA <- NA
-    pbp_data$yacEPA <- NA
-    pbp_data$airEPA[pass_plays_i] <- NA
-    pbp_data$yacEPA[pass_plays_i] <- NA
+    pbp_data$air_epa <- NA
+    pbp_data$yac_epa <- NA
+    pbp_data$comp_air_epa <- NA
+    pbp_data$comp_yac_epa <- NA
+    pbp_data$home_team_comp_air_epa <- 0
+    pbp_data$away_team_comp_air_epa <- 0
+    pbp_data$home_team_comp_yac_epa <- 0
+    pbp_data$away_team_comp_yac_epa <- 0
+    pbp_data$total_home_comp_air_epa <- 0
+    pbp_data$total_away_comp_air_epa <- 0
+    pbp_data$total_home_comp_yac_epa <- 0
+    pbp_data$total_away_comp_yac_epa <- 0
+    pbp_data$home_team_raw_air_epa <- 0
+    pbp_data$away_team_raw_air_epa <- 0
+    pbp_data$home_team_raw_yac_epa <- 0
+    pbp_data$away_team_raw_yac_epa <- 0
+    pbp_data$total_home_raw_air_epa <- 0
+    pbp_data$total_away_raw_air_epa <- 0
+    pbp_data$total_home_raw_yac_epa <- 0
+    pbp_data$total_away_raw_yac_epa <- 0
+    return(pbp_data)
   } else {
     if (nrow(pass_pbp_data) > 1) {
       pass_pbp_data_preds <- as.data.frame(predict(ep_model, newdata = pass_pbp_data, type = "probs"))
