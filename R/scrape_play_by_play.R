@@ -55,23 +55,20 @@ scrape_game_play_by_play <- function(game_id, type, season, check_url = 1) {
     assertthat::assert_that(as.numeric(season) >= 1998,
                             msg = "Regular and post-season game ids with data are only available starting in 1998!")
   }
-  
-  # Scrape JSON data for games since 2009, HTML for everything prior to that:
-  if (season >= 2009) {
-    game_pbp <- scrape_json_play_by_play(game_id, check_url)
-  } else {
-    game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
-                        error = function(cond) { 
-                          message("Could not read from file")
-                          message("Here's the original error message:")
-                          message(cond)
-                          # Just return NA in case of error
-                          return(NA)
-                        }
-    )
 
-    game_pbp <- format_json_play_by_play(game_id, game_json, toString(game_id))
-  }
+  print(game_id)
+  
+  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
+                      error = function(cond) { 
+                        message("Could not read from file")
+                        message("Here's the original error message:")
+                        message(cond)
+                        # Just return NA in case of error
+                        return(NA)
+                      }
+  )
+
+  game_pbp <- format_json_play_by_play(game_id, game_json, toString(game_id))
   
   # Return the game's data:
   return(game_pbp)
@@ -451,47 +448,17 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
     )
   
 
-  if (as.numeric(stringr::str_sub(as.character(game_id), 1, 6)) > 200904) {
-    # First create the game's url:
-    game_url <- create_game_json_url(game_id)
-    
-    # Next check to make sure it exists if check_url == 1:
-    if (check_url == 1) {
-      assertthat::assert_that(RCurl::url.exists(game_url),
-                              msg = "The url for this game is not available yet, please try again later.")
-    }
+  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
+                      error = function(cond) { 
+                        message("Could not read from file")
+                        message("Here's the original error message:")
+                        message(cond)
+                        # Just return NA in case of error
+                        return(NA)
+                      }
+  )
 
-    # Next access the JSON feed for the game, catching any errors that potentially
-    # occur due to the NFL's connection (or internet issues):
-    game_json <- tryCatch(RJSONIO::fromJSON(RCurl::getURL(game_url, encoding = "gzip")),
-                          error = function(cond) { 
-                            message("Connection to NFL.com disrupted, please re-run code.")
-                            message(paste("Here is the game's url:", game_url))
-                            message("Here's the original error message:")
-                            message(cond)
-                            # Just return NA in case of error
-                            return(NA)
-                          }
-    )
-
-    # Now create a column for the game date using the game_id and game_url:
-    date_parse <- stringr::str_extract(game_url, pattern = "/[0-9]{10}/") %>%
-      stringr::str_extract(pattern = "[0-9]{8}")
-
-    formatted <- format_json_play_by_play(game_id, game_json, date_parse)
-  } else {
-    game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
-                        error = function(cond) { 
-                          message("Could not read from file")
-                          message("Here's the original error message:")
-                          message(cond)
-                          # Just return NA in case of error
-                          return(NA)
-                        }
-    )
-
-    formatted <- format_json_play_by_play(game_id, game_json, toString(game_id))
-  }
+  formatted <- format_json_play_by_play(game_id, game_json, toString(game_id))
 
   return(formatted)
 }
@@ -2845,31 +2812,12 @@ scrape_season_play_by_play <- function(season, type = "reg", weeks = NULL, teams
     dplyr::filter(!(game_id %in% c(2014081503, 2016080751, 1999110706, 2000100800, 2000091707, 2000091709, 2005112702, 2005122403))) %>%
     dplyr::pull(game_id)
   
-  if (season >= 2015) {
-    # Go through each game and check if the URL exists:
-    game_ids_check <- purrr::map_lgl(game_ids,
-                                   function(x) {
-                                     game_url <- create_game_json_url(x)
-                                     RCurl::url.exists(game_url)
-                                   })
+  game_ids <- game_ids[file.exists(paste("~/Desktop/FormattedJSON/", game_ids, ".json", sep=""))]
 
-    # If none of the games are available exit:
-    assertthat::assert_that(length(game_ids[game_ids_check]) > 0,
-                            msg = "There are no games available for your inputs!")
-    
-    # Scrape each game's play-by-play and return:
-    purrr::map_dfr(game_ids[game_ids_check], 
-                  function(x) {
-                    scrape_game_play_by_play(game_id = x, type, season,
-                                              check_url = 0)
-                  }) %>% 
-      return
-  } else {
-    purrr::map_dfr(game_ids, 
-                  function(x) {
-                    scrape_game_play_by_play(game_id = x, type, season,
-                                              check_url = 0)
-                  }) %>% 
-      return
-  }
+  purrr::map_dfr(game_ids, 
+                function(x) {
+                  scrape_game_play_by_play(game_id = x, type, season,
+                                            check_url = 0)
+                }) %>% 
+    return
 }
