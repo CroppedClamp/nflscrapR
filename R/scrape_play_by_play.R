@@ -2845,7 +2845,7 @@ scrape_season_play_by_play <- function(season, type = "reg", weeks = NULL, teams
     dplyr::filter(!(game_id %in% c(2014081503, 2016080751, 1999110706, 2000100800, 2000091707, 2000091709, 2005112702, 2005122403))) %>%
     dplyr::pull(game_id)
   
-  if (season >= 2009) {
+  if (season >= 2015) {
     # Go through each game and check if the URL exists:
     game_ids_check <- purrr::map_lgl(game_ids,
                                    function(x) {
