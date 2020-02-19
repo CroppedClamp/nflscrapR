@@ -2375,8 +2375,7 @@ format_json_play_by_play <- function(game_id, game_json, date_parse) {
   
   date_year <- stringr::str_sub(date_parse, 1, 4)
   date_month <- stringr::str_sub(date_parse, 5, 6)
-  date_day <- stringr::str_sub(date_parse, nchar(date_parse) - 1, 
-                               nchar(date_parse))
+  date_day <- stringr::str_sub(date_parse, 7, 8)
   game_pbp <- game_pbp %>%
     dplyr::mutate(game_year = date_year,
                   game_month = date_month,
