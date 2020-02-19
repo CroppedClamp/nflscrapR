@@ -389,15 +389,9 @@ game_play_by_play <- function(GameID) {
   
   # Generate the dataframe with the extra stats:
   # Catch the situation with GameID == 2013092206 and drive == 3
-  if (GameID == 2013092206) {
-    pbp_extrastats <- lapply(c(1,2,4:number.drives),
-                             function(x) suppressWarnings(get_play_stats(nfl.json[[1]]$drives[[x]]))) %>% 
-      dplyr::bind_rows()
-  } else {
-    pbp_extrastats <- lapply(c(1:number.drives),
-                             function(x) suppressWarnings(get_play_stats(nfl.json[[1]]$drives[[x]]))) %>% 
-      dplyr::bind_rows()
-  }
+  pbp_extrastats <- lapply(c(1:number.drives),
+                            function(x) suppressWarnings(get_play_stats(nfl.json[[1]]$drives[[x]]))) %>% 
+    dplyr::bind_rows()
   
   # Add to the PBP dataset:
   
@@ -426,7 +420,9 @@ game_play_by_play <- function(GameID) {
   yline.info.1 <- ifelse(nchar(PBP$yrdln) == 0 |
                          PBP$yrdln == "NULL", dplyr::lag(PBP$yrdln), 
                          yline.info.1)
-  
+  if (is.na(yline.info.1[[1]])) {
+    yline.info.1[[1]] <- yline.info.1[[2]]
+  }
 
   yline.info <- sapply(yline.info.1, strsplit, split = " ")
   
