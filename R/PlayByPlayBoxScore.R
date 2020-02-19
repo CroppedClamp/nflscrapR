@@ -216,31 +216,25 @@ game_play_by_play <- function(GameID) {
   
   # Converting GameID into URL string
   urlstring <- proper_jsonurl_formatting(GameID)
-  
-  nfl.json <- tryCatch(RJSONIO::fromJSON(RCurl::getURL(urlstring)),
-                       error=function(cond) {
-                         message("Connection to API disrupted, please re-run code. If multiple failures, then there is no data available for this game yet.")
-                         message(paste("Here is the url:", urlstring))
-                         message("Here's the original error message:")
-                         message(cond)
-                         # Choose a return value in case of error
-                         return(NA)
-                       })
+
+  nfl.json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
+                      error = function(cond) { 
+                        message("Could not read from file")
+                        message("Here's the original error message:")
+                        message(cond)
+                        # Just return NA in case of error
+                        return(NA)
+                      }
+  )
   
   number.drives <- length(nfl.json[[1]]$drives) - 1
   
   # For now hard coded a fix for the drive in the Patriots vs. TB game
   # that has an empty drive 3 list:
   
-  if (GameID == 2013092206){
-    PBP <- lapply(c(1, 2, 4:number.drives),
-                  function(x) cbind("Drive"=x,data.frame(do.call(rbind,nfl.json[[1]]$drives[[x]]$plays))[,c(1:9)])) %>%
-      dplyr::bind_rows()
-  } else {
-    PBP <- lapply(c(1:number.drives),
-                  function(x) cbind("Drive"=x,data.frame(do.call(rbind,nfl.json[[1]]$drives[[x]]$plays))[,c(1:9)])) %>%
-      dplyr::bind_rows()
-  }
+  PBP <- lapply(c(1:number.drives),
+                function(x) cbind("Drive"=x,data.frame(do.call(rbind,nfl.json[[1]]$drives[[x]]$plays))[,c(1:9)])) %>%
+    dplyr::bind_rows()
   
   # Search through the 'players' lists for each play (the 'plays' list within
   # each drive) to find the air yards, yards after catch, and if the QB was hit
