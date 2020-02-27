@@ -217,7 +217,7 @@ game_play_by_play <- function(GameID) {
   # Converting GameID into URL string
   urlstring <- proper_jsonurl_formatting(GameID)
 
-  nfl.json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", GameID, ".json", sep = "")),
+  nfl.json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSONWithPostseason/", GameID, ".json", sep = "")),
                       error = function(cond) { 
                         message("Could not read from file")
                         message("Here's the original error message:")
