@@ -58,7 +58,7 @@ scrape_game_play_by_play <- function(game_id, type, season, check_url = 1) {
 
   print(game_id)
   
-  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
+  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSONREG/", game_id, ".json", sep = "")),
                       error = function(cond) { 
                         message("Could not read from file")
                         message("Here's the original error message:")
@@ -448,7 +448,7 @@ scrape_json_play_by_play <- function(game_id, check_url = 1) {
     )
   
 
-  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSON/", game_id, ".json", sep = "")),
+  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSONREG/", game_id, ".json", sep = "")),
                       error = function(cond) { 
                         message("Could not read from file")
                         message("Here's the original error message:")
