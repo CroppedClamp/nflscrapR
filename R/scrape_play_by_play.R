@@ -40,7 +40,7 @@
 #'                                       season = 2017)
 #' @export
 
-scrape_game_play_by_play <- function(game_id, type, season, check_url = 1) {
+scrape_game_play_by_play <- function(game_id, base_path, type, season, check_url = 1) {
   
   # First check that the type is one of the required options:
   assertthat::assert_that(tolower(type) %in% c("reg", "pre", "post"),
@@ -58,7 +58,7 @@ scrape_game_play_by_play <- function(game_id, type, season, check_url = 1) {
 
   print(game_id)
   
-  game_json <- tryCatch(RJSONIO::fromJSON(content = paste("~/Desktop/FormattedJSONREG/", game_id, ".json", sep = "")),
+  game_json <- tryCatch(RJSONIO::fromJSON(content = paste(base_path, game_id, ".json", sep = "")),
                       error = function(cond) { 
                         message("Could not read from file")
                         message("Here's the original error message:")
@@ -2803,19 +2803,18 @@ format_json_play_by_play <- function(game_id, game_json, date_parse) {
 #'                                       season = 2017)
 #' @export
 
-scrape_season_play_by_play <- function(season, type = "reg", weeks = NULL, teams = NULL) {
+scrape_season_play_by_play <- function(season, base_path, type = "reg", weeks = NULL, teams = NULL) {
   
   # Gather the game ids based on the inputs:
   game_ids <- scrape_game_ids(season, type, weeks, teams) %>%
     # Remove the pre-season games that were broken in the NFL API:
-    dplyr::filter(!(game_id %in% c(2014081503, 2016080751, 1999110706, 2000100800, 2000091707, 2000091709, 2005112702, 2005122403))) %>%
     dplyr::pull(game_id)
   
-  game_ids <- game_ids[file.exists(paste("~/Desktop/FormattedJSON/", game_ids, ".json", sep=""))]
+  game_ids <- game_ids[file.exists(paste(base_path, game_ids, ".json", sep=""))]
 
   purrr::map_dfr(game_ids, 
                 function(x) {
-                  scrape_game_play_by_play(game_id = x, type, season,
+                  scrape_game_play_by_play(game_id = x, base_path, type, season,
                                             check_url = 0)
                 }) %>% 
     return
