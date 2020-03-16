@@ -2812,10 +2812,6 @@ scrape_season_play_by_play <- function(season, base_path, type = "reg", weeks = 
   
   game_ids <- game_ids[file.exists(paste(base_path, game_ids, ".json", sep=""))]
 
-  load(file = paste("~/Desktop/EP_Models/ep_model_", season, ".RData", sep=""))
-  load(file = "~/Desktop/wp_model.RData")
-  load(file = "~/Desktop/fg_model.RData")
-
   purrr::map_dfr(game_ids, 
                 function(x) {
                   scrape_game_play_by_play(game_id = x, base_path, type, season,
