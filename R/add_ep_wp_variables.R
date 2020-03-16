@@ -55,8 +55,7 @@ add_ep_variables <- function(pbp_data) {
       base_ep_preds <- as.data.frame(matrix(predict(ep_model, newdata = data, type = "probs"),
                                             ncol = 7))
     }
-    colnames(base_ep_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                 "Field_Goal","Safety","Touchdown")
+    colnames(base_ep_preds) <- ep_model$lev
     # ----------------------------------------------------------------------------
     # Now make another dataset that to get the EP probabilities from a missed FG:
     missed_fg_data <- data
@@ -85,8 +84,7 @@ add_ep_variables <- function(pbp_data) {
       missed_fg_ep_preds <- as.data.frame(matrix(predict(ep_model, newdata = missed_fg_data, type = "probs"),
                                                  ncol = 7))
     }
-    colnames(missed_fg_ep_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                      "Field_Goal","Safety","Touchdown")
+    colnames(missed_fg_ep_preds) <- ep_model$lev
     # Find the rows where TimeSecs_Remaining became 0 or negative and make all the probs equal to 0:
     end_game_i <- which(missed_fg_data$TimeSecs_Remaining <= 0)
     missed_fg_ep_preds[end_game_i,] <- rep(0,ncol(missed_fg_ep_preds))
@@ -136,8 +134,7 @@ add_ep_variables <- function(pbp_data) {
       kickoff_preds <- as.data.frame(matrix(predict(ep_model, newdata = kickoff_data, type = "probs"),
                                             ncol = 7))
     }
-    colnames(kickoff_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                 "Field_Goal","Safety","Touchdown")
+    colnames(kickoff_preds) <- ep_model$lev
     # Find the kickoffs:
     kickoff_i <- which(data$play_type == "kickoff")
     
@@ -573,8 +570,7 @@ add_air_yac_ep_variables <- function(pbp_data) {
                                                   ncol = 7))
     }
 
-    colnames(pass_pbp_data_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                      "Field_Goal","Safety","Touchdown")
+    colnames(pass_pbp_data_preds) <- ep_model$lev
     # Convert to air EP:
     pass_pbp_data_preds <- dplyr::mutate(pass_pbp_data_preds, airEP = (Opp_Safety*-2) + (Opp_Field_Goal*-3) + 
                                           (Opp_Touchdown*-7) + (Safety*2) + (Field_Goal*3) + (Touchdown*7))
@@ -783,8 +779,7 @@ add_wp_variables <- function(pbp_data) {
       overtime_df_ko_preds <- as.data.frame(matrix(predict(ep_model, newdata = overtime_df_ko, type = "probs"),
                                                    ncol = 7))
     }
-    colnames(overtime_df_ko_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                        "Field_Goal","Safety","Touchdown")
+    colnames(overtime_df_ko_preds) <- ep_model$lev
     overtime_df_ko_preds <- dplyr::mutate(overtime_df_ko_preds,
                                           Win_Back = No_Score + Opp_Field_Goal + Opp_Safety + Opp_Touchdown)
     
@@ -1150,8 +1145,7 @@ add_air_yac_wp_variables <- function(pbp_data) {
       overtime_df_ko_preds <- as.data.frame(matrix(predict(ep_model, newdata = overtime_df_ko, type = "probs"),
                                                    ncol = 7))
     }
-    colnames(overtime_df_ko_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                        "Field_Goal","Safety","Touchdown")
+    colnames(overtime_df_ko_preds) <- ep_model$lev
     overtime_df_ko_preds <- dplyr::mutate(overtime_df_ko_preds,
                                           Win_Back = No_Score + Opp_Field_Goal + Opp_Safety + Opp_Touchdown)
     
@@ -1226,8 +1220,7 @@ add_air_yac_wp_variables <- function(pbp_data) {
         overtime_pass_data_preds <- as.data.frame(matrix(predict(ep_model, newdata = overtime_pass_df, type = "probs"),
                                                         ncol = 7))
       }
-      colnames(overtime_pass_data_preds) <- c("No_Score","Opp_Field_Goal","Opp_Safety","Opp_Touchdown",
-                                              "Field_Goal","Safety","Touchdown")
+      colnames(overtime_pass_data_preds) <- ep_model$lev
       # For the turnover plays flip the scoring probabilities:
       overtime_pass_data_preds <- dplyr::mutate(overtime_pass_data_preds,
                                                 old_Opp_Field_Goal = Opp_Field_Goal,

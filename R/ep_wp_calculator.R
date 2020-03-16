@@ -76,8 +76,7 @@ calculate_expected_points <- function(pbp_data, half_seconds_remaining,
     base_ep_preds <- as.data.frame(matrix(predict(ep_model, newdata = model_pbp_data, type = "probs"),
                                           ncol = 7))
   }
-  colnames(base_ep_preds) <- c("No_Score", "Opp_Field_Goal", "Opp_Safety", "Opp_Touchdown",
-                               "Field_Goal", "Safety", "Touchdown")
+  colnames(base_ep_preds) <- ep_model$lev
   
   # Rename the columns to be consistent with the nflscrapR play-by-play datasets:
   base_ep_preds <- base_ep_preds %>%
