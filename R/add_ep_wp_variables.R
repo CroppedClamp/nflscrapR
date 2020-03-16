@@ -31,6 +31,7 @@ add_ep_variables <- function(pbp_data) {
     # Next make the modifications to use the rest of the 
     dplyr::mutate(down = factor(down),
                   log_ydstogo = log(ydstogo),
+                  FiveMinutesLeft  = dplyr::if_else(TimeSecs_Remaining < 300 & qtr >= 4, 1, 0),
                   Under_TwoMinute_Warning = dplyr::if_else(TimeSecs_Remaining < 120, 
                                                            1, 0))
   
