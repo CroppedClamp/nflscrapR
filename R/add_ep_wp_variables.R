@@ -76,6 +76,7 @@ add_ep_variables <- function(pbp_data) {
     
     # Create Under_TwoMinute_Warning indicator
     missed_fg_data$Under_TwoMinute_Warning <- ifelse(missed_fg_data$TimeSecs_Remaining < 120,1,0)
+    missed_fg_data$FiveMinutesLeft <- ifelse(missed_fg_data$TimeSecs_Remaining < 300 & missed_fg_data$qtr >= 4,1,0)
     
     # Get the new predicted probabilites:
     if (nrow(missed_fg_data) > 1) {
@@ -509,6 +510,7 @@ add_air_yac_ep_variables <- function(pbp_data) {
     # Next make the modifications to use the rest of the 
     dplyr::mutate(down = factor(down),
                   log_ydstogo = log(ydstogo),
+                  FiveMinutesLeft = dplyr::if_else(TimeSecs_Remaining < 300 & qtr >= 4, 1, 0),
                   Under_TwoMinute_Warning = dplyr::if_else(TimeSecs_Remaining < 120, 
                                                            1, 0)) %>%
   # Rename the old columns to update for calculating the EP from the air:
@@ -535,6 +537,7 @@ add_air_yac_ep_variables <- function(pbp_data) {
                                               (Turnover_Ind == 1 & yrdline100 <= 10),
                                             1, 0),
                   TimeSecs_Remaining = old_TimeSecs_Remaining - 5.704673,
+                  FiveMinutesLeft = dplyr::if_else(TimeSecs_Remaining < 300 & qtr >= 4, 1, 0),
                   Under_TwoMinute_Warning = dplyr::if_else(TimeSecs_Remaining < 120,
                                                            1, 0),
                   down = as.factor(down))
@@ -704,6 +707,7 @@ add_wp_variables <- function(pbp_data) {
     # Next make the modifications to use the rest of the 
     dplyr::mutate(down = factor(down),
                   log_ydstogo = log(ydstogo),
+                  FiveMinutesLeft = dplyr::if_else(TimeSecs_Remaining < 300 & qtr >= 4, 1, 0),
                   Under_TwoMinute_Warning = dplyr::if_else(TimeSecs_Remaining < 120, 
                                                            1, 0),
                   ExpScoreDiff = ep + score_differential,
@@ -768,6 +772,7 @@ add_wp_variables <- function(pbp_data) {
     overtime_df_ko <- dplyr::mutate(overtime_df_ko, log_ydstogo = log(ydstogo))
     
     # Create Under_TwoMinute_Warning indicator
+    overtime_df_ko$FiveMinutesLeft <- ifelse(overtime_df_ko$TimeSecs_Remaining < 300 & overtime_df_ko$qtr >= 4, 1, 0)
     overtime_df_ko$Under_TwoMinute_Warning <- ifelse(overtime_df_ko$TimeSecs_Remaining < 120,
                                                      1, 0)
     
@@ -1008,6 +1013,7 @@ add_air_yac_wp_variables <- function(pbp_data) {
     # Next make the modifications to use the rest of the 
     dplyr::mutate(down = factor(down),
                   log_ydstogo = log(ydstogo),
+                  FiveMinutesLeft = dplyr::if_else(TimeSecs_Remaining < 300 & qtr >= 4, 1, 0),
                   Under_TwoMinute_Warning = dplyr::if_else(TimeSecs_Remaining < 120, 
                                                            1, 0),
                   ExpScoreDiff = ep + score_differential,
@@ -1133,6 +1139,7 @@ add_air_yac_wp_variables <- function(pbp_data) {
     overtime_df_ko <- dplyr::mutate(overtime_df_ko, log_ydstogo = log(ydstogo))
     
     # Create Under_TwoMinute_Warning indicator
+    overtime_df_ko$FiveMinutesLeft <- ifelse(overtime_df_ko$TimeSecs_Remaining < 300 & overtime_df_ko$qtr >= 4, 1, 0)
     overtime_df_ko$Under_TwoMinute_Warning <- ifelse(overtime_df_ko$TimeSecs_Remaining < 120,
                                                      1, 0)
     
@@ -1206,6 +1213,7 @@ add_air_yac_wp_variables <- function(pbp_data) {
       overtime_pass_df$TimeSecs_Remaining <- overtime_pass_df$old_TimeSecs_Remaining - 5.704673
       
       # Create Under_TwoMinute_Warning indicator
+      overtime_pass_df$FiveMinutesLeft <- ifelse(overtime_pass_df$TimeSecs_Remaining < 300 & overtime_pass_df$qtr >= 4, 1, 0)
       overtime_pass_df$Under_TwoMinute_Warning <- ifelse(overtime_pass_df$TimeSecs_Remaining < 120,1,0)
       
       # Make the new down a factor:
